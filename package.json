@@ -9,11 +9,14 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@arbitrum/sdk": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.6",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.0",
     "@openzeppelin/contracts-upgradeable": "^5.0.0",
     "@openzeppelin/hardhat-upgrades": "^3.0.0",
-    "hardhat": "^2.16.1"
+    "ethers": "^6.13.2",
+    "hardhat": "^2.22.7"
   },
   "dependencies": {
     "@remix-project/remixd": "^0.6.35"

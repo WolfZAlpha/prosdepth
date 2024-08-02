@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.24;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -313,16 +313,6 @@ contract PROSPERAICO is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         emit IcoStateUpdated(true, IcoTier.Tier1);
     }
 
-    /// @notice Sets the address of the PROSPERA contract
-    /// @dev This function can only be called by the contract owner and only once
-    /// @param _prosperaContract The address of the PROSPERA contract
-    function setProsperaContract(address _prosperaContract) external onlyOwner {
-        if (_prosperaContract == address(0)) revert InvalidAddress();
-        if (prosperaContract != address(0)) revert AlreadySet();
-        prosperaContract = _prosperaContract;
-        emit ProsperaContractSet(_prosperaContract);
-    }
-
     /// @notice Updates the address of the PROSPERA contract
     /// @dev This function can only be called by the contract owner
     /// @param _newProsperaContract The new address of the PROSPERA contract
@@ -386,12 +376,12 @@ contract PROSPERAICO is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         uint256 icoTaxAmount = ethValue * ICO_TAX_RATE / 100;
         uint256 remainingEth = ethValue - icoTaxAmount;
 
-        uint256 currentTierPrice = getCurrentTierPriceETH();
-        uint256 maxTokensPossible = (remainingEth * 1e18) / currentTierPrice;
+        uint256 currentTierPriceETH = getCurrentTierPriceETH();
+        uint256 maxTokensPossible = remainingEth * 1e18 / currentTierPriceETH;
         uint256 tokensToBuy = (tokenAmount < maxTokensPossible) ? tokenAmount : maxTokensPossible;
 
         (tokensBought, totalCost) = buyFromCurrentTier(tokensToBuy, remainingEth);
-        if (tokensBought == 0) revert InsufficientFundsForPurchase({required: currentTierPrice, provided: remainingEth});
+        if (tokensBought == 0) revert InsufficientFundsForPurchase({required: currentTierPriceETH, provided: remainingEth});
 
         _icoBuys[msg.sender] += ethValue;  // Update the total ETH spent, including tax
 
@@ -598,20 +588,6 @@ contract PROSPERAICO is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         } catch {
             revert FailedToRecordIcoCompletion();
         }
-    }
-
-    /// @notice Sets the PROSPERA contract address and transfers ICO tokens
-    /// @dev This function should be called after initialization
-    /// @param _prosperaContract The address of the PROSPERA contract
-    function setProsperaContractAndTransferTokens(address _prosperaContract) external onlyOwner {
-        if (_prosperaContract == address(0)) revert InvalidAddress();
-        if (prosperaContract != address(0)) revert AlreadySet();
-        prosperaContract = _prosperaContract;
-        
-        // Transfer ICO tokens to this contract
-        IERC20(prosperaContract).transferFrom(msg.sender, address(this), ICO_SUPPLY());
-        
-        emit ProsperaContractSet(_prosperaContract);
     }
 
     /// @notice Sets the ICO state (active or inactive)

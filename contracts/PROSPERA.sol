@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.24;
 
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {ERC20BurnableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
@@ -185,11 +185,11 @@ contract PROSPERA is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, 
 
     /// @notice Emitted when the ICO state is changed
     /// @param newState The new state of the ICO (true for active, false for inactive)
-    event IcoStateChanged(bool newState);
+    event IcoStateChanged(bool indexed newState);
 
     /// @notice Emitted when the circulating supply is updated
     /// @param newSupply The new circulating supply amount
-    event CirculatingSupplyUpdated(uint256 newSupply);
+    event CirculatingSupplyUpdated(uint256 indexed newSupply);
 
     /// @notice Error thrown when an operation involves a blacklisted address
     /// @param account The address that is blacklisted
@@ -238,6 +238,9 @@ contract PROSPERA is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, 
 
     /// @notice Error thrown when trying to perform an ICO operation while the ICO is not active or is paused
     error IcoNotActive();
+
+    /// @notice failed to add the account to the vesting schedule
+    error FailedToAddAccountToVesting();
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -353,9 +356,7 @@ contract PROSPERA is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     /// @notice Checks if the given address is the ICO contract
-    /// @param account The address to check
-    /// @return True if the address is the ICO contract, false otherwise
-    function isIcoContract(address account) public view returns (bool) {
+    function isIcoContract(address account) public view returns (bool isIco) {
         return account == icoContract;
     }
 
@@ -505,7 +506,7 @@ contract PROSPERA is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, 
     function addAccountToVesting(address account, uint256 amount, uint8 vestingType) external onlyOwner returns (bool success) {
         if (vestingContract == address(0)) revert InvalidContractAddress("vesting");
         success = IVestingContract(vestingContract).addToVesting(account, amount, vestingType);
-        require(success, "Failed to add account to vesting");
+        if (!success) revert FailedToAddAccountToVesting();
         return success;
     }
 

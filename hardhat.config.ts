@@ -17,13 +17,13 @@ if (!ARBITRUM_RPC_URL || !ARBISCAN_API_KEY || !DEPLOYER_PRIVATE_KEY) {
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.20",
+    version: "0.8.24",
     settings: {
       optimizer: {
         enabled: true,
         runs: 200,
       },
-      viaIR: true,
+      evmVersion: "cancun",
     },
   },
   networks: {
@@ -32,16 +32,15 @@ const config: HardhatUserConfig = {
       chainId: 42161,
       accounts: [DEPLOYER_PRIVATE_KEY],
       gasPrice: "auto",
-      gas: 8000000,  // Adjusted gas limit for safety
     },
   },
   etherscan: {
     apiKey: {
-      arbitrumOne: ARBISCAN_API_KEY,  // Ensure this key name is correct
+      arbitrumOne: ARBISCAN_API_KEY,
     },
   },
   sourcify: {
-    enabled: true,  // Optional: Enable Sourcify verification if needed
+    enabled: true,
   },
 };
 
